@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<item>
+		<field1>Field 1</field1>
+		<field2>Field 2</field2>
+		<multi>Multi value 1</multi>
+		<multi>Multi value 1</multi>
+		<multi>Multi value 2</multi>
+	</item>
+</root>

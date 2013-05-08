@@ -7,7 +7,7 @@
  *
  * @author Paul Warelis <pwarelis@gmail.com>
  */
-class XmlExtractor implements Iterator {
+class XmlExtractor implements Iterator, Countable {
 	/** @var int $count The total number of items in the file */
 	private $count;
 
@@ -42,7 +42,6 @@ class XmlExtractor implements Iterator {
 	private $depth;
 
 	private $valid = array(XMLReader::ELEMENT, XMLReader::END_ELEMENT, XMLReader::TEXT, XMLReader::CDATA);
-	private $rootsChecked = false;
 
 	public function __construct($tag, $filename = null, $returnArray = false, $mergeAttributes = false) {
 		if ($filename && !file_exists($filename)) {
@@ -56,7 +55,6 @@ class XmlExtractor implements Iterator {
 		foreach ($tags as $tag) {
 			$this->tags[$tag] = null;
 		}
-		$this->rootsChecked = empty($this->tags);
 	}
 
 	public function getRootTags() {
@@ -70,18 +68,6 @@ class XmlExtractor implements Iterator {
 
 	public function loadXml($xml) {
 		$this->raw = $xml;
-	}
-
-	private function checkRoots() {
-		if ($this->rootsChecked) return;
-		// If skip tags were defined and we're closing an element and
-		// not all of them were found, then signal error
-		foreach ($this->tags as $tag) {
-			if (is_null($tag)) {
-				throw new Exception("Specified root tags were not found in file");
-			}
-		}
-		$this->rootsChecked = true;
 	}
 
 	private function getRecord($xml = null, $skipRead = false) {
@@ -103,23 +89,19 @@ class XmlExtractor implements Iterator {
 
 			// Some tags we don't care about
 			if (!in_array($type, $this->valid)) continue;
-			if ($type == XMLReader::END_ELEMENT) {
-				$this->checkRoots();
-				break;
-			}
+			if ($type == XMLReader::END_ELEMENT) break;
 
 			// If the tag is one that we're going into, just save the attributes
-			if ($this->depth == 0 && !empty($this->tags) && array_key_exists($name, $this->tags) && is_null($this->tags[$name])) {
-				$this->tags[$name] = new XmlItem($name);
-				$this->tags[$name]->copyAttributes($xml);
-
+			if ($this->depth == 0 && !empty($this->tags) && $this->tag !== $name) {
+				if (array_key_exists($name, $this->tags) && is_null($this->tags[$name])) {
+					$this->tags[$name] = new XmlItem($name);
+					$this->tags[$name]->copyAttributes($xml);
+				} else {
+					throw new Exception("Unspecified root tag found in file: {$name}");
+				}
 			} else {
 
 				if (is_null($data)) {
-					if ($this->depth == 0 && $this->tag !== $name) {
-						throw new Exception("Wrong item tag encountered. Expected '{$this->tag}', but got '{$name}'");
-					}
-					// This is the main tag record
 					$data = new XmlItem($name);
 					$data->copyAttributes($xml);
 
@@ -193,7 +175,7 @@ class XmlExtractor implements Iterator {
 	}
 	
 	public final function valid()	 {
-		return !empty($this->record);
+		return !is_null($this->record);
 	}
 
 	public function count() {

@@ -18,11 +18,9 @@ class XmlItem extends stdClass implements Iterator {
 	/** @var array $__data The tag's descendants */
 	protected $__data = array();
 	private $__current = false;
-	private $__mergeAttributes;
 
-	public function __construct($name = '', $mergeAttributes = false) {
+	public function __construct($name = '') {
 		$this->setName($name);
-		$this->__mergeAttributes = $mergeAttributes;
 	}
 
 	public function add() {
@@ -84,13 +82,17 @@ class XmlItem extends stdClass implements Iterator {
 		}
 		foreach ($this->__data as $name => $item) {
 			if ($item instanceof XmlItem) {
-				$export[$name] = $item->export($mergeAttributes);
+				$export[$item->getName()] = $item->export($mergeAttributes);
 			} else {
 				$export[$name] = $item;
 			}
 		}
 		if ($this->__value !== false) {
-			$export[$this->__name] = $this->__value;
+			if ($mergeAttributes) {
+				$export[$this->__name] = $this->__value;
+			} else {
+				$export = $this->__value;
+			}
 		}
 		return $export;
 	}
@@ -109,15 +111,24 @@ class XmlItem extends stdClass implements Iterator {
 		$xml->moveToElement();
 	}
 
-	public function mergeAttributes() {
-		foreach ($this->__attr as $name => $value) {
-			if (!$this->__isset($name)) {
-				$this->setProperty($name, $value);
-			}
+	/**
+	 * @param bool $unsetAttributes If true, will reset the internal attribute list
+	 */
+	public function mergeAttributes($unsetAttributes = true) {
+		if ($this->__value) {
+			$this->setProperty($this->__name, $this->__value);
+			$this->__value = false;
 		}
-		unset($this->__attr);
+		if ($this->__attr) {
+			foreach ($this->__attr as $name => $value) {
+				if (!$this->__isset($name)) {
+					$this->setProperty($name, $value);
+				}
+			}
+			if ($unsetAttributes) unset($this->__attr);
+		}
 		foreach ($this as $name => $item) {
-			if ($item instanceof XmlItem) $item->mergeAttributes();
+			if ($item instanceof XmlItem) $item->mergeAttributes($unsetAttributes);
 		}
 	}
 
@@ -129,7 +140,8 @@ class XmlItem extends stdClass implements Iterator {
 	 * @return XmlItem|string|null
 	 */
 	public function getAttribute($name = null) {
-		$attr = $this->__attr;
+		if (!$this->__attr) return array();
+		$attr = $this->__attr->export();
 		if (is_null($name)) return $attr;
 		return array_key_exists($name, $attr) ? $attr[$name] : null;
 	}
@@ -182,20 +194,12 @@ class XmlItem extends stdClass implements Iterator {
 	// Standard magic methods
 	// ----------------------------------------------------
 
-	public function __set($name, $value) {
-		$this->setProperty($name, $value);
-	}
-
 	public function __get($name) {
 		return $this->__isset($name) ? $this->__data[$name] : null;
 	}
 
 	public function __isset($name) {
 		return array_key_exists($name, $this->__data);
-	}
-
-	public function __unset($name) {
-		unset($this->__data[$name]);
 	}
 
 }
