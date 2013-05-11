@@ -275,6 +275,52 @@ XML;
 		$this->assertCount(1, $source);
 	}
 
+	public function testExportDuplicatingEmptyTagsWithNoAttributes() {
+		// Testing empty tags
+		$xml = "<root><item><tag/><tag/></item></root>";
+		$source = $this->getExtractor($xml, "root/item");
+		foreach ($source as $row) {
+			/** @var XmlItem $row */
+			$this->assertEquals(array("tag" => array("0" => "","1" => "")), $row->export());
+			$this->assertEquals($row->export(true), $row->export());
+		}
+
+		// Testing closed tags
+		$xml = "<root><item><tag></tag><tag></tag></item></root>";
+		$source = $this->getExtractor($xml, "root/item");
+		foreach ($source as $row) {
+			/** @var XmlItem $row */
+			$this->assertEquals(array("tag" => array("0" => "","1" => "")), $row->export());
+			$this->assertEquals($row->export(true), $row->export());
+		}
+	}
+
+	public function testExportDuplicatingEmptyTagsWithAttributes() {
+		// Testing empty tags with attributes
+		$xml = '<root><item><tag name="start"/><tag name="end"/></item></root>';
+		$source = $this->getExtractor($xml, "root/item");
+		foreach ($source as $row) {
+			/** @var XmlItem $row */
+			$this->assertEquals(array("tag" => array("0" => "","1" => "")), $row->export());
+			$this->assertEquals(array("tag" => array(
+				"0" => array("name" => "start"),
+				"1" => array("name" => "end"),
+			)), $row->export(true));
+		}
+
+		// Testing closed tags with attributes
+		$xml = '<root><item><tag name="start"></tag><tag name="end"></tag></item></root>';
+		$source = $this->getExtractor($xml, "root/item");
+		foreach ($source as $row) {
+			/** @var XmlItem $row */
+			$this->assertEquals(array("tag" => array("0" => "","1" => "")), $row->export());
+			$this->assertEquals(array("tag" => array(
+				"0" => array("name" => "start"),
+				"1" => array("name" => "end"),
+			)), $row->export(true));
+		}
+	}
+
 	/**
 	 * @expectedException Exception
 	 * @expectedExceptionMessage File doesn't exist: not_existent_file

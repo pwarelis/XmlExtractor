@@ -17,6 +17,7 @@ class XmlItem extends stdClass implements Iterator {
 	private $__value = false;
 	/** @var array $__data The tag's descendants */
 	protected $__data = array();
+	private $__collection = false;
 	private $__current = false;
 
 	public function __construct($name = '') {
@@ -62,6 +63,7 @@ class XmlItem extends stdClass implements Iterator {
 				$item->add($value);
 			} else {
 				$xml = new XmlItem($name);
+				$xml->__collection = true;
 				$xml->add($item, $value);
 				$this->__data[$name] = $xml;
 			}
@@ -82,7 +84,8 @@ class XmlItem extends stdClass implements Iterator {
 		}
 		foreach ($this->__data as $name => $item) {
 			if ($item instanceof XmlItem) {
-				$export[$item->getName()] = $item->export($mergeAttributes);
+				$field = $this->__collection ? $name : $item->getName();
+				$export[$field] = $item->export($mergeAttributes);
 			} else {
 				$export[$name] = $item;
 			}
@@ -93,6 +96,8 @@ class XmlItem extends stdClass implements Iterator {
 			} else {
 				$export = $this->__value;
 			}
+		} else {
+			if (empty($export)) $export = "";
 		}
 		return $export;
 	}
@@ -127,7 +132,7 @@ class XmlItem extends stdClass implements Iterator {
 			}
 			if ($unsetAttributes) unset($this->__attr);
 		}
-		foreach ($this as $name => $item) {
+		foreach ($this as $item) {
 			if ($item instanceof XmlItem) $item->mergeAttributes($unsetAttributes);
 		}
 	}

@@ -23,7 +23,7 @@ There are four parameters you can pass the constructor
 	XmlExtractor($rootTags, $filename, $returnArray, $mergeAttributes)
 
 - `$rootTags` Specify how deep to go into the structure before extracting objects. Examples are below
-- `$filename` Path to the xml file you want to parse. This is optional as you can pass an xml string with `loadXml()` method
+- `$filename` Path to the XML file you want to parse. This is optional as you can pass an XML string with `loadXml()` method
 - `$returnArray` If true, every iteration will return items as an associative array. Default is false
 - `$mergeAttributes` If true, any attributes on extracted tags will be included in the returned record as additional tags. Examples below
 
@@ -39,11 +39,11 @@ This will return the skipped root tags as objects as soon as they are available
 
 	XmlItem.export($mergeAttributes = false)
 
-Convert this xml record into an array. If `$mergeAttributes` is true, any attributes are merged into the array returned
+Convert this XML record into an array. If `$mergeAttributes` is true, any attributes are merged into the array returned
 
 	XmlItem.getAttribute($name)
 
-Returns this record's named attribute
+Returns the record's named attribute
 
 	XmlItem.getAttributes()
 
@@ -56,9 +56,9 @@ Merges the record's attributes with the rest of the tags so they are accessible 
 Examples
 ----------
 
-### Iterating over xml items
+### Iterating over XML items
 
-Simple xml structure and straight forward php.
+Simple XML structure and straight forward php.
 
 ```xml
 <earth>
@@ -109,6 +109,56 @@ array(
 
 It's important to note that the repeating tag "skill" turned into an array.
 
+### Loading XML from a string
+
+To load an XML from string, you first create the extractor and then use `loadXml()` method to get it in.
+
+```php
+$xml = <<<XML
+<house>
+	<room>
+		<corner location="NW"/>
+		<corner location="SW"/>
+		<corner location="SE"/>
+		<corner location="NE"/>
+	</room>
+</house>
+XML;
+
+$source = new XmlExtractor("house/room");
+$source->loadXml($xml);
+foreach ($source as $room) {
+	var_dump($room->export());
+	var_dump($room->export(true));
+}
+```
+
+The first dump will show the "corner" field that contains four empty values:
+
+```php
+array(
+  'corner' => array(
+    '0' => '',
+    '1' => '',
+    '2' => '',
+    '3' => ''
+  )
+)
+```
+
+But when you merge the attributes with the tag data, the array changes to:
+
+```php
+array(
+  'corner' => array(
+    '0' => array( "location" => "NW"),
+    '1' => array( "location" => "SW"),
+    '2' => array( "location" => "SE"),
+    '3' => array( "location" => "NE")
+  )
+)
+```
+
 ### Dealing with attributes
 
 This example demonstrates how to deal with attributes.
@@ -133,7 +183,7 @@ This example demonstrates how to deal with attributes.
 </office>
 ```
 
-There are a number of things going on with the above xml.
+There are a number of things going on with the above XML.
 The two root tags that we have to skip to get to our items have information attached.
 We can get at these with the `getRootTags()` method. The next issue is that both items are using attributes to define their data.
 This example is a bit contrived, but it will show the functionality behind the **mergeAttributes** feature.

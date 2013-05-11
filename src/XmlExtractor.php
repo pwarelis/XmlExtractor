@@ -1,4 +1,7 @@
 <?php
+// TODO: Include support for a tag path like this: "root/*"
+// TODO: Implement the ArrayAccessible methods with an array of root nodes like in that dream you had
+// TODO: Create a benchmark for the parsing speed
 
 /**
  * Class XmlExtractor
