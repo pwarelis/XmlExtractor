@@ -195,7 +195,7 @@ foreach ($office as $item) {
   $compressed = $item->export(true); // true = merge attributes into the item
   var_dump($compressed);
 }
-foreach ($office->getRootTags as $name => $tag) {
+foreach ($office->getRootTags() as $name => $tag) {
   echo "Tag name: {$name}";
   var_dump($tag->getAttributes());
 }
