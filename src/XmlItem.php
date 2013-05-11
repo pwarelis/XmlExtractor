@@ -23,7 +23,7 @@ class XmlItem extends stdClass implements Iterator {
 		$this->setName($name);
 	}
 
-	public function add() {
+	private function add() {
 		foreach (func_get_args() as $param) {
 			$this->__data[] = $param;
 		}
