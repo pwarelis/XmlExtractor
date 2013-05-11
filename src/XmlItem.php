@@ -146,6 +146,10 @@ class XmlItem extends stdClass implements Iterator {
 		return array_key_exists($name, $attr) ? $attr[$name] : null;
 	}
 
+	public function getAttributes() {
+		return $this->getAttribute();
+	}
+
 	public function isEmpty() {
 		return is_null($this->__attr) && empty($this->__data);
 	}

@@ -41,6 +41,10 @@ This will return the skipped root tags as objects as soon as they are available
 
 Convert this xml record into an array. If `$mergeAttributes` is true, any attributes are merged into the array returned
 
+	XmlItem.getAttribute($name)
+
+Returns this record's named attribute
+
 	XmlItem.getAttributes()
 
 Returns this record's attributes if any
@@ -129,7 +133,11 @@ This example demonstrates how to deal with attributes.
 </office>
 ```
 
-There are a number of things going on with the above xml. The two root tags that we have to skip to get to our items have information attached. We can get at these with the `getRootTags()` method. The next issue is that both items are using attributes to define their data. This example is a bit contrived, but it will show the functionality behind the **mergeAttributes** feature. By the end of this example, we will have two items with identical structure.
+There are a number of things going on with the above xml.
+The two root tags that we have to skip to get to our items have information attached.
+We can get at these with the `getRootTags()` method. The next issue is that both items are using attributes to define their data.
+This example is a bit contrived, but it will show the functionality behind the **mergeAttributes** feature.
+By the end of this example, we will have two items with identical structure.
 
 ```php
 $office = new XmlExtractor("office/items/item", "/path/to/above.xml");
@@ -137,9 +145,15 @@ foreach ($office as $item) {
   $compressed = $item->export(true); // true = merge attributes into the item
   var_dump($compressed);
 }
+foreach ($office->getRootTags as $name => $tag) {
+  echo "Tag name: {$name}";
+  var_dump($tag->getAttributes());
+}
 ```
 
-Once "compressed" (exported with merged attributes) the structure of both items is the same. In the event of an  attribute having the same name as the tag, the tag takes precedence and is never overwritten. The two items will look like the following:
+Once "compressed" (exported with merged attributes) the structure of both items is the same.
+In the event of an  attribute having the same name as the tag, the tag takes precedence and is never overwritten.
+The two items will end up looking like this:
 
 ```php
 array(
@@ -161,6 +175,19 @@ array(
     'length' => '70',
     'size' => 'large'
   )
+)
+```
+
+The root tags bit will come up with this:
+
+```php
+Tag name: office
+array(
+  'address' => '123 Main Street'
+)
+Tag name: items
+array(
+  'total' => '2'
 )
 ```
 
