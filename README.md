@@ -124,7 +124,7 @@ It's important to note that the repeating tag "skill" turned into an array.
 
 ### Loading XML from a string
 
-To load an XML from string, you first create the extractor and then use `loadXml()` method to get it in.
+First create the extractor and then use `loadXml()` method to get the data in.
 
 ```php
 $xml = <<<XML
