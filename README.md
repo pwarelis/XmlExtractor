@@ -272,7 +272,7 @@ If your XML file has markup like this:
 </art>
 ```
 
-The "__art__" tag contains many different items. To parse them, do this (notice the path to the tag):
+The **art** tag contains many different items. To parse them, do this (notice the path to the tag):
 
 ```php
 $art = new XmlExtractor("art/*", "/path/to/above.xml");
