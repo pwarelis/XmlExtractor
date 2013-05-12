@@ -109,7 +109,7 @@ XML;
 				"size" => "large",
 				"color" => "blue",
 				"field" => "Tag attribute field value"
-			), $row->getAttribute());
+			), $row->getAttributes());
 
 			$this->assertEquals("large", $row->getAttribute("size"));
 			$this->assertEquals("blue", $row->getAttribute("color"));
@@ -321,6 +321,30 @@ XML;
 		}
 	}
 
+	public function testWildccardTags() {
+		$xml = <<<XML
+	<root>
+		<valid>
+			<valid-field>Value 1</valid-field>
+		</valid>
+		<alsovalid>
+			<alsovalid-field>Value 2</alsovalid-field>
+		</alsovalid>
+	</root>
+XML;
+		$source = $this->getExtractor($xml, "root/*");
+		foreach ($source as $i => $row) {
+			/** @var XmlItem $row */
+			if ($i == 0) {
+				$this->assertEquals("valid", $row->getName());
+				$this->assertEquals(array("valid-field" => "Value 1"), $row->export());
+			} else {
+				$this->assertEquals("alsovalid", $row->getName());
+				$this->assertEquals(array("alsovalid-field" => "Value 2"), $row->export());
+			}
+		}
+		$this->assertCount(2, $source);
+	}
 	/**
 	 * @expectedException Exception
 	 * @expectedExceptionMessage File doesn't exist: not_existent_file
@@ -336,8 +360,17 @@ XML;
 	public function testRootTagDoesNotExist() {
 		$xml = "<root_tag><tag></tag></root_tag>";
 		$source = $this->getExtractor($xml);
-		foreach ($source as $i => $row) {}
+		foreach ($source as $row) {}
 	}
 
+	/**
+	 * @expectedException Exception
+	 * @expectedExceptionMessage Loaded tag (exceptiontag) does not match expected tag (tag)
+	 */
+	public function test() {
+		$xml = "<root><tag></tag><exceptiontag></exceptiontag></root>";
+		$source = $this->getExtractor($xml, "root/tag");
+		foreach ($source as $row) {}
+	}
 }
 

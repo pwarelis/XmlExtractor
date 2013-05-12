@@ -1,5 +1,4 @@
 <?php
-// TODO: Include support for a tag path like this: "root/*"
 // TODO: Implement the ArrayAccessible methods with an array of root nodes like in that dream you had
 // TODO: Create a benchmark for the parsing speed
 
@@ -55,10 +54,9 @@ class XmlExtractor implements Iterator, Countable {
 		$this->mergeAttributes = $mergeAttributes;
 		$tags = explode("/", $tag);
 		$this->tag = array_pop($tags);
+		// If we're using wildcards, it means pickup anything in the root tag path
 		if ($this->tag == '*') $this->tag = true;
-		foreach ($tags as $tag) {
-			$this->tags[$tag] = null;
-		}
+		foreach ($tags as $tag) $this->tags[$tag] = null;
 	}
 
 	public function getRootTags() {
@@ -79,39 +77,26 @@ class XmlExtractor implements Iterator, Countable {
 
 		$rootsDone = true;
 		foreach ($this->tags as $tag) {
-			if (is_null($tag)) {
-				$rootsDone = false;
-				break;
-			}
+			if (!is_null($tag)) continue;
+			$rootsDone = false;
+			break;
 		}
 
 		if (!$rootsDone) {
-			// All root tags are not accounted for, see if this is one of them
+			// Not all root tags are accounted for, see if this is one of them
 			if (array_key_exists($name, $this->tags) && is_null($this->tags[$name])) {
-
-
+				return true;
+			} else {
+				throw new Exception("Unspecified root tag found in file: {$name}");
 			}
 		}
 
-		// If we're accepting all tags (tag=*) inside the root structure
-		if ($this->tag === true) {
+		// We're accepting all tags inside the root structure
+		if ($this->tag === true) return false;
 
-			// Now we need to check if all the root tags have been registered. If not, throw an exception
-
-
-//			if (array_key_exists($name, $this->tags) && is_null($this->tags[$name])) {
-//				throw new Exception("Unspecified root tag found in file: {$name}");
-//			}
-
-		} else {
-			// We're only accepting a specific tag in the root structure, throw an exception if it's different
-			if ($rootsDone) {
-				if ($this->tag === $name) return false;
-				throw new Exception("Loaded tag ({$name}) does not match expected tag ({$this->tag})");
-			}
-			if (empty($this->tags[$name])) return true;
-			throw new Exception("Unspecified root tag found in file: {$name}");
-		}
+		// We're only accepting a specific tag in the root structure, throw an exception if it's different
+		if ($this->tag === $name) return false;
+		throw new Exception("Loaded tag ({$name}) does not match expected tag ({$this->tag})");
 	}
 
 	private function getRecord($xml = null, $skipRead = false) {

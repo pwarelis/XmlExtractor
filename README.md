@@ -254,6 +254,47 @@ array(
 )
 ```
 
+### Using Wildcards (*)
+
+If your XML file has markup like this:
+
+```xml
+<art>
+	<painting>
+		<name>Mona Lisa</name>
+	</painting>
+	<sculpture>
+		<name>Dying Gaul</name>
+	</sculpture>
+	<photo>
+		<name>Afghan Girl</name>
+	</photo>
+</art>
+```
+
+The "**art**" tag contains many different items. To parse them, do this (notice the path to the tag):
+
+```php
+$art = new XmlExtractor("art/*", "/path/to/above.xml");
+foreach ($art as $name => $piece) {
+  echo "Piece : " . $piece->getName();
+  var_dump($piece->export());
+}
+```
+
+The output would be something like this:
+
+```php
+Piece : painting
+array('name' => 'Mona Lisa')
+Piece : sculpture
+array('name' => 'Dying Gaul')
+Piece : photo
+array('name' => 'Afghan Girl')
+```
+
+If you find bugs, post an issue. I will correct or educate.
+
 Enjoy!
 
 Contact
