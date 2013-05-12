@@ -55,6 +55,7 @@ class XmlExtractor implements Iterator, Countable {
 		$this->mergeAttributes = $mergeAttributes;
 		$tags = explode("/", $tag);
 		$this->tag = array_pop($tags);
+		if ($this->tag == '*') $this->tag = true;
 		foreach ($tags as $tag) {
 			$this->tags[$tag] = null;
 		}
@@ -71,6 +72,46 @@ class XmlExtractor implements Iterator, Countable {
 
 	public function loadXml($xml) {
 		$this->raw = $xml;
+	}
+
+	private function isRootTag($name) {
+		if ($this->depth > 0 || empty($this->tags)) return false;
+
+		$rootsDone = true;
+		foreach ($this->tags as $tag) {
+			if (is_null($tag)) {
+				$rootsDone = false;
+				break;
+			}
+		}
+
+		if (!$rootsDone) {
+			// All root tags are not accounted for, see if this is one of them
+			if (array_key_exists($name, $this->tags) && is_null($this->tags[$name])) {
+
+
+			}
+		}
+
+		// If we're accepting all tags (tag=*) inside the root structure
+		if ($this->tag === true) {
+
+			// Now we need to check if all the root tags have been registered. If not, throw an exception
+
+
+//			if (array_key_exists($name, $this->tags) && is_null($this->tags[$name])) {
+//				throw new Exception("Unspecified root tag found in file: {$name}");
+//			}
+
+		} else {
+			// We're only accepting a specific tag in the root structure, throw an exception if it's different
+			if ($rootsDone) {
+				if ($this->tag === $name) return false;
+				throw new Exception("Loaded tag ({$name}) does not match expected tag ({$this->tag})");
+			}
+			if (empty($this->tags[$name])) return true;
+			throw new Exception("Unspecified root tag found in file: {$name}");
+		}
 	}
 
 	private function getRecord($xml = null, $skipRead = false) {
@@ -95,13 +136,9 @@ class XmlExtractor implements Iterator, Countable {
 			if ($type == XMLReader::END_ELEMENT) break;
 
 			// If the tag is one that we're going into, just save the attributes
-			if ($this->depth == 0 && !empty($this->tags) && $this->tag !== $name) {
-				if (array_key_exists($name, $this->tags) && is_null($this->tags[$name])) {
-					$this->tags[$name] = new XmlItem($name);
-					$this->tags[$name]->copyAttributes($xml);
-				} else {
-					throw new Exception("Unspecified root tag found in file: {$name}");
-				}
+			if ($this->isRootTag($name)) {
+				$this->tags[$name] = new XmlItem($name);
+				$this->tags[$name]->copyAttributes($xml);
 			} else {
 
 				if (is_null($data)) {
