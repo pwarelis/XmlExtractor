@@ -6,7 +6,20 @@ The XmlExtractor is a class that will parse XML very efficiently with the XMLRea
 How to Use
 ----------
 
-In general, this is the pattern you would use to parse XML with XmlExtractor
+Given the XML file below:
+
+```xml
+<root>
+	<item>
+		<tag1>Value 1</tag1>
+		<tag2>
+			<subtag1>Sub Value 2</subtag1>
+		</tag2>
+	</item>
+</root>
+```
+
+this is the pattern you would use to parse XML with XmlExtractor:
 
 ```php
 $source = new XmlExtractor("root/item", "/path/to/file.xml");
