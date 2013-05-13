@@ -12,7 +12,7 @@ class XmlExtractor implements Iterator, Countable {
 	private $count;
 
 	/** @var int $position Index of the current record */
-	private $position = 0;
+	private $position = null;
 
 	/** @var XmlItem|array $record The current record we're dealing with */
 	private $record;
@@ -166,6 +166,14 @@ class XmlExtractor implements Iterator, Countable {
 		return $data;
 	}
 
+	public final function fetch() {
+		if (is_null($this->position)) {
+			$this->rewind();
+			return $this->current();
+		}
+		return $this->next();
+	}
+	
 	public final function current() {
 		return $this->record;
 	}
